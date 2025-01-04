@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Teacher Page</title>
+  <!-- Import a fun Google Font -->
+  <link
+    href="https://fonts.googleapis.com/css2?family=Baloo+2&display=swap"
+    rel="stylesheet"
+  />
+  <style>
+    body {
+      font-family: 'Baloo 2', cursive;
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(to bottom right, #ffd1dc, #fff1e0);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    h1 {
+      margin-top: 30px;
+      margin-bottom: 10px;
+      color: #333;
+      text-align: center;
+      font-size: 2.5rem;
+    }
+
+    label {
+      font-size: 1.1rem;
+      margin-right: 10px;
+      color: #444;
+    }
+
+    select, input, button, textarea {
+      font-family: 'Baloo 2', cursive;
+      font-size: 1rem;
+      padding: 6px 10px;
+      border-radius: 8px;
+      border: 2px solid #ccc;
+      outline: none;
+      margin-top: 10px;
+      margin-bottom: 10px;
+      transition: 0.3s;
+    }
+
+    select:focus, input:focus, textarea:focus {
+      border-color: #ff94c2;
+    }
+
+    button {
+      background-color: #ff94c2;
+      border: none;
+      color: #fff;
+      cursor: pointer;
+      font-weight: bold;
+      text-shadow: 1px 1px #888;
+    }
+
+    button:hover {
+      background-color: #ff60a2;
+      transform: scale(1.05);
+    }
+
+    #activitySelect {
+      margin-left: 10px;
+      margin-bottom: 20px;
+    }
+
+    .activity-section {
+      background-color: #ffffffcc;
+      border: 2px solid #ffe4e1;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      width: 80%;
+      max-width: 600px;
+    }
+
+    .activity-section h2 {
+      margin-top: 0;
+      color: #444;
+    }
+
+    .word-entry, .sentence-entry {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    ul {
+      list-style: disc inside;
+      margin-top: 10px;
+      padding-left: 0;
+    }
+
+    #tChartWordBank,
+    #fibSentenceList,
+    #fibWordBankList {
+      list-style-type: none;
+    }
+  </style>
+</head>
+<body>
+<script>
+  const PASSWORD = "secret123"; // The teacher can change this in the code
+
+  const enteredPassword = prompt("Enter the teacher password:");
+  if (enteredPassword !== PASSWORD) {
+    alert("Access denied!");
+    window.location.href = "student.html"; // Redirect to student page
+  }
+</script>
+  <h1>Teacher Page</h1>
+  <label for="activitySelect">Choose Activity:</label>
+  <select id="activitySelect">
+    <option value="">-- Select an Activity --</option>
+    <option value="wordOrder">Word Order</option>
+    <option value="tChart">T-Chart</option>
+    <option value="fillInBlank">Fill in the Blank</option>
+  </select>
+
+  <!-- Word Order Section allowing up to 5 sentences -->
+  <div id="wordOrderSection" class="activity-section" style="display: none;">
+    <h2>Word Order Game</h2>
+
+    <!-- Up to 5 textareas for 5 sentences -->
+    <label>Sentence 1:</label>
+    <textarea
+      id="wordOrderSentence1"
+      rows="2"
+      style="width: 100%;"
+      placeholder="Enter sentence #1"
+    ></textarea>
+
+    <label>Sentence 2:</label>
+    <textarea
+      id="wordOrderSentence2"
+      rows="2"
+      style="width: 100%;"
+      placeholder="Enter sentence #2 (optional)"
+    ></textarea>
+
+    <label>Sentence 3:</label>
+    <textarea
+      id="wordOrderSentence3"
+      rows="2"
+      style="width: 100%;"
+      placeholder="Enter sentence #3 (optional)"
+    ></textarea>
+
+    <label>Sentence 4:</label>
+    <textarea
+      id="wordOrderSentence4"
+      rows="2"
+      style="width: 100%;"
+      placeholder="Enter sentence #4 (optional)"
+    ></textarea>
+
+    <label>Sentence 5:</label>
+    <textarea
+      id="wordOrderSentence5"
+      rows="2"
+      style="width: 100%;"
+      placeholder="Enter sentence #5 (optional)"
+    ></textarea>
+
+    <button id="saveWordOrder">Save Word Order</button>
+  </div>
+
+  <!-- T-Chart Section -->
+  <div id="tChartSection" class="activity-section" style="display: none;">
+    <h2>T-Chart Activity</h2>
+    <label>Column A:</label>
+    <input type="text" id="columnA" placeholder="Column A Label" />
+    <br/>
+    <label>Column B:</label>
+    <input type="text" id="columnB" placeholder="Column B Label" />
+    <br/>
+    <h3>Word Bank</h3>
+    <div class="word-entry">
+      <input type="text" id="tChartWord" placeholder="Word or Phrase" />
+      <select id="tChartCorrectColumn">
+        <option value="Column A">Column A</option>
+        <option value="Column B">Column B</option>
+      </select>
+      <button id="addTChartWord">Add Word</button>
+    </div>
+    <ul id="tChartWordBank"></ul>
+    <button id="saveTChart">Save T-Chart</button>
+  </div>
+
+  <!-- Fill in the Blank Section -->
+  <div id="fillInBlankSection" class="activity-section" style="display: none;">
+    <h2>Fill in the Blank</h2>
+    <div>
+      <div class="sentence-entry">
+        <textarea
+          id="fibSentence"
+          placeholder="Enter a sentence or question"
+          rows="2"
+          style="width: 100%;"
+        ></textarea>
+        <button id="fibAddBlank">Add Blank</button>
+      </div>
+      <ul id="fibSentenceList"></ul>
+    </div>
+
+    <h3>Word Bank</h3>
+    <div class="word-entry">
+      <input type="text" id="fibWord" placeholder="Enter word for word bank" />
+      <button id="fibAddWord">Add</button>
+    </div>
+    <ul id="fibWordBankList"></ul>
+    <button id="saveFillInBlank">Save Fill in the Blank</button>
+  </div>
+
+  <script>
+    const activitySelect = document.getElementById("activitySelect");
+    const wordOrderSection = document.getElementById("wordOrderSection");
+    const tChartSection = document.getElementById("tChartSection");
+    const fillInBlankSection = document.getElementById("fillInBlankSection");
+
+    // Show/hide sections based on dropdown selection
+    activitySelect.addEventListener("change", () => {
+      const value = activitySelect.value;
+      // Hide all first
+      wordOrderSection.style.display = "none";
+      tChartSection.style.display = "none";
+      fillInBlankSection.style.display = "none";
+
+      if (value === "wordOrder") {
+        wordOrderSection.style.display = "block";
+      } else if (value === "tChart") {
+        tChartSection.style.display = "block";
+      } else if (value === "fillInBlank") {
+        fillInBlankSection.style.display = "block";
+      }
+    });
+
+    /* ------------------------------------------------------------------
+     * Word Order Logic (Up to 5 Sentences)
+     * ------------------------------------------------------------------ */
+    document.getElementById("saveWordOrder").addEventListener("click", () => {
+      // Gather up to 5 sentences
+      const inputs = [
+        document.getElementById("wordOrderSentence1").value.trim(),
+        document.getElementById("wordOrderSentence2").value.trim(),
+        document.getElementById("wordOrderSentence3").value.trim(),
+        document.getElementById("wordOrderSentence4").value.trim(),
+        document.getElementById("wordOrderSentence5").value.trim(),
+      ];
+
+      // Filter out empty sentences
+      const nonEmptySentences = inputs.filter((sentence) => sentence !== "");
+      if (nonEmptySentences.length === 0) {
+        alert("Please enter at least one sentence.");
+        return;
+      }
+
+      // Convert each sentence into an array of words
+      // Example: [["The","dog","is","blue"], ["Another","sentence"] ]
+      const wordOrderData = nonEmptySentences.map((s) => s.split(" "));
+	 
+      localStorage.setItem("activityType", "wordOrder");
+      localStorage.setItem("wordOrderData", JSON.stringify(wordOrderData));
+      alert("Word Order activity saved!");
+
+      // Clear fields
+      document.getElementById("wordOrderSentence1").value = "";
+      document.getElementById("wordOrderSentence2").value = "";
+      document.getElementById("wordOrderSentence3").value = "";
+      document.getElementById("wordOrderSentence4").value = "";
+      document.getElementById("wordOrderSentence5").value = "";
+    });
+
+    /* ------------------------------------------------------------------
+     * T-Chart Logic
+     * ------------------------------------------------------------------ */
+    let tChartWordBank = [];
+    document.getElementById("addTChartWord").addEventListener("click", () => {
+      const tChartWordInput = document.getElementById("tChartWord");
+      const correctColumnSelect = document.getElementById("tChartCorrectColumn");
+      const word = tChartWordInput.value.trim();
+      if (!word) {
+        alert("Enter a valid word or phrase.");
+        return;
+      }
+      const correctColumn = correctColumnSelect.value;
+      tChartWordBank.push({ text: word, correctColumn });
+
+      const li = document.createElement("li");
+      li.textContent = `${word} (Correct: ${correctColumn})`;
+      document.getElementById("tChartWordBank").appendChild(li);
+      tChartWordInput.value = "";
+    });
+
+    document.getElementById("saveTChart").addEventListener("click", () => {
+      const colA = document.getElementById("columnA").value.trim();
+      const colB = document.getElementById("columnB").value.trim();
+      if (!colA || !colB || tChartWordBank.length === 0) {
+        alert("Please fill in all T-Chart fields.");
+        return;
+      }
+
+      localStorage.setItem("activityType", "tChart");
+      localStorage.setItem(
+        "tChartData",
+        JSON.stringify({ columnA: colA, columnB: colB, wordBank: tChartWordBank })
+      );
+      alert("T-Chart saved!");
+
+      document.getElementById("columnA").value = "";
+      document.getElementById("columnB").value = "";
+      document.getElementById("tChartWordBank").innerHTML = "";
+      tChartWordBank = [];
+    });
+
+    /* ------------------------------------------------------------------
+     * Fill in the Blank Logic
+     * ------------------------------------------------------------------ */
+    let fibSentences = [];
+    let fibWordBank = [];
+
+    document.getElementById("fibAddBlank").addEventListener("click", () => {
+      const fibSentenceInput = document.getElementById("fibSentence");
+      const sentence = fibSentenceInput.value.trim();
+      if (!sentence) {
+        alert("Please enter a valid sentence.");
+        return;
+      }
+      const blankWord = prompt("Enter the word to replace with a blank:");
+      if (!blankWord || !sentence.includes(blankWord)) {
+        alert("The word must be in the sentence.");
+        return;
+      }
+
+      const blanked = sentence.replace(blankWord, "_____");
+      fibSentences.push({ blankedSentence: blanked, blankWord });
+      const li = document.createElement("li");
+      li.textContent = blanked;
+      document.getElementById("fibSentenceList").appendChild(li);
+      fibSentenceInput.value = "";
+    });
+
+    document.getElementById("fibAddWord").addEventListener("click", () => {
+      const fibWordInput = document.getElementById("fibWord");
+      const word = fibWordInput.value.trim();
+      if (!word) {
+        alert("Please enter a valid word.");
+        return;
+      }
+      fibWordBank.push(word);
+      const li = document.createElement("li");
+      li.textContent = word;
+      document.getElementById("fibWordBankList").appendChild(li);
+      fibWordInput.value = "";
+    });
+
+    document.getElementById("saveFillInBlank").addEventListener("click", () => {
+      if (fibSentences.length === 0 || fibWordBank.length === 0) {
+        alert("Please add at least one sentence and one word.");
+        return;
+      }
+
+      localStorage.setItem("activityType", "fillInBlank");
+      localStorage.setItem(
+        "fillInTheBlank",
+        JSON.stringify({ sentences: fibSentences, wordBank: fibWordBank })
+      );
+      alert("Fill in the Blank saved!");
+
+      fibSentences = [];
+      fibWordBank = [];
+      document.getElementById("fibSentenceList").innerHTML = "";
+      document.getElementById("fibWordBankList").innerHTML = "";
+    });
+  </script>
+</body>
+</html>
+

@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Student Page</title>
+  <!-- Same fun Google Font -->
+  <link
+    href="https://fonts.googleapis.com/css2?family=Baloo+2&display=swap"
+    rel="stylesheet"
+  />
+  <style>
+    body {
+      font-family: 'Baloo 2', cursive;
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(to bottom right, #d1faff, #ffd6e0);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    #content {
+      background-color: #ffffffcc;
+      width: 90%;
+      max-width: 800px;
+      margin-top: 30px;
+      padding: 20px;
+      border: 2px solid #eee;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    h1, h2 {
+      text-align: center;
+      color: #333;
+    }
+
+    button {
+      font-family: 'Baloo 2', cursive;
+      font-size: 1rem;
+      padding: 8px 16px;
+      border-radius: 8px;
+      border: none;
+      background-color: #6ec6ff;
+      color: #fff;
+      cursor: pointer;
+      text-shadow: 1px 1px #888;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      background-color: #45a1ff;
+      transform: scale(1.05);
+    }
+
+    /* Word Order Game styling */
+    #wordsContainer, #dropzoneContainer {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+      justify-content: center;
+    }
+    #wordsContainer div, #dropzoneContainer div {
+      font-size: 1.1rem;
+      text-align: center;
+      background: #f0f0f0;
+      border: 2px solid #ddd;
+      border-radius: 6px;
+      padding: 6px 12px;
+      cursor: grab;
+    }
+
+    /* T-Chart styling */
+    #colA, #colB {
+      width: 45%;
+      border: 2px solid #bbb;
+      border-radius: 8px;
+      min-height: 200px;
+      padding: 10px;
+      margin-bottom: 20px;
+      background-color: #fdfdfd;
+    }
+    #wordBank div {
+      background-color: #ffefef;
+      border: 2px dashed #ffa5a5;
+      border-radius: 6px;
+      padding: 6px 12px;
+      cursor: grab;
+      margin-bottom: 5px;
+    }
+
+    /* Fill in the blank styling */
+    #sentencesContainer {
+      margin-bottom: 20px;
+      line-height: 1.8;
+    }
+    .blank {
+      border-bottom: 2px dashed #aaa;
+      min-width: 60px;
+      display: inline-block;
+      text-align: center;
+    }
+    #wordBank .dragging {
+      opacity: 0.6;
+    }
+
+    /* Feedback styling */
+    #feedback, #result, #tChartResult {
+      font-size: 1.2rem;
+      font-weight: bold;
+      text-align: center;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div id="content"></div>
+
+  <script>
+    const activityType = localStorage.getItem("activityType");
+
+    if (!activityType) {
+      document.getElementById("content").innerHTML = `
+        <h1>No Activity Chosen</h1>
+        <p>The teacher hasn't set up an activity or it wasn't saved properly.</p>
+      `;
+    } else if (activityType === "wordOrder") {
+      loadWordOrder();
+    } else if (activityType === "tChart") {
+      loadTChart();
+    } else if (activityType === "fillInBlank") {
+      loadFillInBlank();
+    }
+
+    /* -----------------------------------
+     * Word Order (Multiple Sentences)
+     * ----------------------------------- */
+    function loadWordOrder() {
+      const wordOrderData = JSON.parse(localStorage.getItem("wordOrderData"));
+      if (!wordOrderData || wordOrderData.length === 0) {
+        document.getElementById("content").innerHTML = "<h1>No Word Order Data Found!</h1>";
+        return;
+      }
+
+      let html = `<h1>Word Order Game</h1>`;
+      wordOrderData.forEach((wordsArray, index) => {
+        html += `
+          <div style="margin-bottom: 30px;">
+            <h2>Sentence ${index + 1}</h2>
+            <div id="wordsContainer${index}" style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom: 10px;"></div>
+            <div id="dropzoneContainer${index}" style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px;"></div>
+            <button id="checkBtn${index}">Check Sentence ${index + 1}</button>
+            <p id="result${index}" style="font-weight:bold;"></p>
+          </div>
+        `;
+      });
+
+      document.getElementById("content").innerHTML = html;
+
+      // For each sentence
+      wordOrderData.forEach((wordsArray, index) => {
+        const wordsContainer = document.getElementById(`wordsContainer${index}`);
+        const dropzoneContainer = document.getElementById(`dropzoneContainer${index}`);
+        const checkBtn = document.getElementById(`checkBtn${index}`);
+        const result = document.getElementById(`result${index}`);
+
+        // Shuffle
+        const shuffled = wordsArray.slice().sort(() => Math.random() - 0.5);
+
+        // Create word divs
+        shuffled.forEach((w) => {
+          const wd = document.createElement("div");
+          wd.textContent = w;
+          wd.draggable = true;
+          wd.dataset.word = w;
+          wordsContainer.appendChild(wd);
+
+          // Basic styling
+          wd.style.padding = "5px 10px";
+          wd.style.background = "#f0f0f0";
+          wd.style.border = "1px solid #ccc";
+          wd.style.cursor = "grab";
+        });
+
+        // Create drop zones (same number as words)
+        wordsArray.forEach(() => {
+          const dz = document.createElement("div");
+          dz.style.width = "80px";
+          dz.style.height = "40px";
+          dz.style.border = "2px dashed #ccc";
+          dz.style.display = "flex";
+          dz.style.alignItems = "center";
+          dz.style.justifyContent = "center";
+          dropzoneContainer.appendChild(dz);
+        });
+
+        // Drag logic
+        let dragged = null;
+        wordsContainer.querySelectorAll("[draggable]").forEach((elem) => {
+          elem.addEventListener("dragstart", () => {
+            dragged = elem;
+          });
+          elem.addEventListener("dragend", () => {
+            dragged = null;
+          });
+        });
+
+        dropzoneContainer.querySelectorAll("div").forEach((zone) => {
+          zone.addEventListener("dragover", (e) => {
+            e.preventDefault();
+          });
+          zone.addEventListener("drop", () => {
+            if (dragged) {
+			const existingWord = zone.querySelector("[draggable]");
+			if (existingWord) {
+     		wordsContainer.appendChild(existingWord);
+      // Optionally reset styling/position if needed
+    		}
+              zone.innerHTML = "";
+              zone.appendChild(dragged);
+            }
+          });
+        });
+
+        // Check sentence
+       checkBtn.addEventListener("click", () => {
+  // Get raw attempt
+  const rawAttempt = Array.from(dropzoneContainer.querySelectorAll("div"))
+    .map(zone => zone.children[0] ? zone.children[0].dataset.word : "");
+
+  // Remove empty strings
+  const attempt = rawAttempt.filter(word => word !== "");
+
+  console.log("User attempt:", attempt);
+  console.log("Expected words:", wordsArray);
+
+  if (attempt.join(" ") === wordsArray.join(" ")) {
+    result.textContent = "Correct!";
+    result.style.color = "green";
+  } else {
+    result.textContent = "Try again!";
+    result.style.color = "red";
+  }
+});
+      });
+    }
+
+    /* -----------------------------------
+     * T-Chart
+     * ----------------------------------- */
+    function loadTChart() {
+      const tChartData = JSON.parse(localStorage.getItem("tChartData"));
+      if (!tChartData) {
+        document.getElementById("content").innerHTML = "<h1>No T-Chart data found!</h1>";
+        return;
+      }
+      const { columnA, columnB, wordBank } = tChartData;
+
+      document.getElementById("content").innerHTML = `
+        <h1>T-Chart Activity</h1>
+        <div style="display: flex; justify-content: space-around; flex-wrap: wrap;">
+          <div id="colA">
+            <h2>${columnA}</h2>
+          </div>
+          <div id="colB">
+            <h2>${columnB}</h2>
+          </div>
+        </div>
+        <h2>Word Bank</h2>
+        <div id="wordBank" style="display: flex; gap: 10px; flex-direction: column; flex-wrap: wrap; margin-top: 20px;"></div>
+        <button id="checkTChartBtn">Check Answers</button>
+        <p id="tChartResult"></p>
+      `;
+
+      const colA = document.getElementById("colA");
+      const colB = document.getElementById("colB");
+      const wordBankContainer = document.getElementById("wordBank");
+      const result = document.getElementById("tChartResult");
+
+      // Create draggable words
+      wordBank.forEach(item => {
+        const wDiv = document.createElement("div");
+        wDiv.textContent = item.text;
+        wDiv.dataset.correct = item.correctColumn;
+        wDiv.draggable = true;
+        wordBankContainer.appendChild(wDiv);
+
+        // Basic styling
+        wDiv.style.backgroundColor = "#ffefef";
+        wDiv.style.border = "2px dashed #ffa5a5";
+        wDiv.style.borderRadius = "6px";
+        wDiv.style.padding = "6px 12px";
+        wDiv.style.cursor = "grab";
+
+        wDiv.addEventListener("dragstart", () => wDiv.classList.add("dragging"));
+        wDiv.addEventListener("dragend", () => wDiv.classList.remove("dragging"));
+      });
+
+      // Make columns droppable
+      [colA, colB].forEach(col => {
+        col.addEventListener("dragover", e => e.preventDefault());
+        col.addEventListener("drop", () => {
+          const dragging = document.querySelector(".dragging");
+          if (dragging) {
+            col.appendChild(dragging);
+          }
+        });
+      });
+
+      // Check T-Chart
+      document.getElementById("checkTChartBtn").addEventListener("click", () => {
+        const wordsInA = colA.querySelectorAll("[draggable]");
+        const wordsInB = colB.querySelectorAll("[draggable]");
+        let correctCount = 0;
+
+        wordsInA.forEach(w => {
+          if (w.dataset.correct === "Column A") correctCount++;
+        });
+        wordsInB.forEach(w => {
+          if (w.dataset.correct === "Column B") correctCount++;
+        });
+
+        if (correctCount === wordBank.length) {
+          result.textContent = "All answers are correct! Great job!";
+          result.style.color = "green";
+        } else {
+          result.textContent = `${correctCount} out of ${wordBank.length} correct. Keep trying!`;
+          result.style.color = "red";
+        }
+      });
+    }
+
+    /* -----------------------------------
+     * Fill In The Blank
+     * ----------------------------------- */
+    function loadFillInBlank() {
+      const data = JSON.parse(localStorage.getItem("fillInTheBlank"));
+      if (!data) {
+        document.getElementById("content").innerHTML = "<h1>No Fill-in-the-Blank data found!</h1>";
+        return;
+      }
+      const { sentences, wordBank } = data;
+
+      document.getElementById("content").innerHTML = `
+        <h1>Fill in the Blank</h1>
+        <div id="sentencesContainer"></div>
+        <h2>Word Bank</h2>
+        <div id="wordBank" style="display: flex; gap: 10px; flex-wrap: wrap; margin: 20px 0;"></div>
+        <button id="checkFibBtn">Check Answers</button>
+        <div id="feedback" style="margin-top: 20px; font-weight: bold;"></div>
+      `;
+
+      const sentencesContainer = document.getElementById("sentencesContainer");
+      const wordBankContainer = document.getElementById("wordBank");
+      const feedback = document.getElementById("feedback");
+
+      // Render sentences with blanks
+      sentences.forEach(({ blankedSentence, blankWord }, index) => {
+        const sentenceDiv = document.createElement("div");
+        sentenceDiv.style.marginBottom = "10px";
+
+        const blankSpan = `
+          <span
+            class="blank"
+            data-correct="${blankWord}"
+            data-index="${index}"
+            style="cursor: pointer;"
+          >
+            _____
+          </span>
+        `;
+        sentenceDiv.innerHTML = blankedSentence.replace("_____", blankSpan);
+        sentencesContainer.appendChild(sentenceDiv);
+      });
+
+      // Render word bank
+      wordBank.forEach(word => {
+        const wDiv = document.createElement("div");
+        wDiv.textContent = word;
+        wDiv.draggable = true;
+        wDiv.style.border = "1px solid #ccc";
+        wDiv.style.padding = "5px 10px";
+        wDiv.style.background = "#f0f0f0";
+        wDiv.style.cursor = "grab";
+        wordBankContainer.appendChild(wDiv);
+
+        wDiv.addEventListener("dragstart", () => wDiv.classList.add("dragging"));
+        wDiv.addEventListener("dragend", () => wDiv.classList.remove("dragging"));
+      });
+
+      // Make blanks droppable
+      const blanks = document.querySelectorAll(".blank");
+      blanks.forEach(blank => {
+        blank.addEventListener("dragover", e => e.preventDefault());
+        blank.addEventListener("drop", () => {
+          const dragged = document.querySelector(".dragging");
+          if (dragged) {
+            blank.textContent = dragged.textContent;
+          }
+        });
+      });
+
+      // Check answers
+      document.getElementById("checkFibBtn").addEventListener("click", () => {
+        let correctCount = 0;
+        blanks.forEach(b => {
+          const correct = b.dataset.correct;
+          const studentWord = b.textContent.trim();
+          if (studentWord === correct) {
+            correctCount++;
+          }
+        });
+
+        if (correctCount === blanks.length) {
+          feedback.textContent = "All answers are correct! Great job!";
+          feedback.style.color = "green";
+        } else {
+          feedback.textContent = `${correctCount} out of ${blanks.length} correct. Keep trying!`;
+          feedback.style.color = "red";
+        }
+      });
+    }
+  </script>
+</body>
+</html>
